@@ -1,27 +1,45 @@
 
-name: 'cafe_dbt_project'
+name: 'dbt_core_demo_cafe'
 version: '1.0.0'
 config-version: 2
-
-profile: 'cafe_dbt_project'
+profile: 'dbt_core_demo_cafe'
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
 macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
 
-target-path: "target"
-clean-targets:
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to clean out on `dbt clean`
   - "target"
   - "dbt_packages"
 
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+# In this example config, we tell dbt to build all models in the example/ directory
+# as tables. These settings can be overridden in a model's config block.
+
 models:
-  cafe_dbt_project:
+  dbt_core_demo_cafe:
+    +materialized: view
+
     staging:
       +materialized: view
+
     intermediate:
-      +materialized: ephemeral
+      +materialized: view
+
     marts:
       +materialized: table
+
+
+# DuckDB specific profile configuration
+# This allows the project to run without an external profiles.yml file
+# For more details, see: https://docs.getdbt.com/docs/core/connection-profiles#advanced-profile-configs
+
+vars:
+  dbt_project_name: dbt_core_demo_cafe
+

@@ -1,0 +1,7 @@
+dbt_core_demo_cafe:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "./dbt_core_demo_cafe.duckdb"
+      schema: main

@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: dim_stores
+    description: "店舗に関するディメンションテーブルです。店舗の基本情報（店舗名、所在地、オープン日など）を提供します。店舗分析の基礎となります。"
+    columns:
+      - name: store_key
+        description: "店舗を一意に識別する代理キーです。dbt_utils.generate_surrogate_keyによって生成されます。"
+        tests:
+          - unique
+          - not_null
+      - name: store_id
+        description: "元のデータソースにおける店舗IDです。"
+      - name: store_name
+        description: "店舗の名称です。"
+      - name: location
+        description: "店舗の所在地です。"
+      - name: opened_at
+        description: "店舗のオープン日時です。店舗の運営期間や成長段階の分析に利用できます。"

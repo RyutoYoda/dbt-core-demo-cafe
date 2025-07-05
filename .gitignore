@@ -1,1 +1,13 @@
-profiles.yml
+# Environments
+.venv/
+
+# dbt artifacts
+dbt_core_demo_cafe.duckdb
+dbt_packages/
+logs/
+target/
+
+# Other
+package-lock.yml
+.user.yml
+.vscode/
