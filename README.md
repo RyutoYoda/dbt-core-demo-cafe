@@ -99,10 +99,10 @@
      ```
 
 11.  **クリーンアップ**:
-    ```bash
-    make clean
-    ```
-    仮想環境、dbtの成果物（`target`、`dbt_packages`、`logs`）を削除し、クリーンな状態に戻します。
+     ```bash
+     make clean
+     ```
+     想環境、dbtの成果物（`target`、`dbt_packages`、`logs`）を削除し、クリーンな状態に戻します。
 
 ## 今後の拡張
 
