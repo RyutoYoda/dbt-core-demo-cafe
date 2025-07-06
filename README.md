@@ -86,7 +86,19 @@
     ```
     ブラウザで `http://localhost:8080` にアクセスすると、生成されたドキュメントを確認できます。
 
-9.  **クリーンアップ**:
+10.**DuckDBの操作**
+   ```bash
+   #テーブルの一覧
+   duckdb dbt_core_demo_cafe.duckdb -c '.tables'
+
+   #DuckDBに入る
+   duckdb dbt_core_demo_cafe.duckdb
+
+   #テーブルの中を見る
+   SELECT * FROM fct_orders LIMIT 10;
+   ```
+
+11.  **クリーンアップ**:
     ```bash
     make clean
     ```
