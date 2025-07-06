@@ -1,4 +1,4 @@
-# dbt-core-demo-cafe
+# dbt-core-demo-cafe🥷
 
 このdbtプロジェクトは、カフェの運営データを分析するためのデータモデルを提供します。
 
@@ -64,25 +64,28 @@
     ```bash
     dbt seed
     ```
-
-5.  **モデルの実行**:
-    ```bash
-    dbt run
-    ```
-
-6.  **テストの実行**:
+5.  **テストの実行**:
     ```bash
     dbt test
     ```
 
-7.  **ドキュメントの生成と表示**:
+6.  **モデルの実行**:
+    ```bash
+    dbt run
+    ```
+7.  **Streamlitで可視化**:
+    ```bash
+    streamlit run app.py
+    ```
+
+8.  **ドキュメントの生成と表示**:
     ```bash
     dbt docs generate
     dbt docs serve
     ```
     ブラウザで `http://localhost:8080` にアクセスすると、生成されたドキュメントを確認できます。
 
-8.  **クリーンアップ**:
+9.  **クリーンアップ**:
     ```bash
     make clean
     ```
