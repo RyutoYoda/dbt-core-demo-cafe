@@ -1,6 +1,7 @@
 # dbt-core-demo-cafe🥷
 
 このdbtプロジェクトは、架空のカフェの運営データを分析するためのデータモデルを提供します。
+<img width="878" alt="スクリーンショット 2025-07-06 17 59 03" src="https://github.com/user-attachments/assets/54404022-df87-4017-be50-9615f0ff4d28" />
 
 ## プロジェクトの目的
 
