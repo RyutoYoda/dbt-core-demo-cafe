@@ -6,7 +6,7 @@ import pandas as pd
 DB_PATH = "./dbt_core_demo_cafe.duckdb"
 
 st.set_page_config(layout="wide")
-st.title("dbt Core Demo Cafe Dashboard")
+st.title("架空カフェ分析ダッシュボード☕️")
 
 @st.cache_data
 def load_data(table_name):
