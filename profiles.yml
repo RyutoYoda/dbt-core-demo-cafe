@@ -1,3 +1,4 @@
+#データベースの接続情報を記載
 dbt_core_demo_cafe:
   target: dev
   outputs:
