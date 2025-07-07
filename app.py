@@ -15,7 +15,7 @@ def load_data(query):
 
 # --- Streamlit UIの設定 --- #
 st.set_page_config(layout="wide")
-st.title("カフェ売上分析ダッシュボード（スタースキーマ版）☕️")
+st.title("架空カフェ売上分析ダッシュボード☕️")
 st.info("このダッシュボードは、dbtで構築された単一のスタースキーマ（`fct_order_items`と3つの`dim_*`テーブル）を可視化したものです。")
 
 # --- データマートの読み込み --- #
