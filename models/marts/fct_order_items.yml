@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: fct_order_items
+    description: |
+      「注文明細」を粒度とするファクトテーブル。
+      各行が、一つの注文に含まれる特定の商品明細を表します。
+      商品レベルの詳細な分析に使用します。
+    columns:
+      - name: order_item_key
+        description: 注文明細を一意に識別する代理キー（主キー）。
+        tests:
+          - unique
+          - not_null
+      - name: order_key
+        description: 注文ファクトテーブルへの代理キー。
+        tests:
+          - not_null
+      - name: customer_key
+        description: 顧客ディメンションへの代理キー。
+        tests:
+          - not_null
+      - name: store_key
+        description: 店舗ディメンションへの代理キー。
+        tests:
+          - not_null
+      - name: product_key
+        description: 商品ディメンションへの代理キー。
+        tests:
+          - not_null
+      - name: ordered_at
+        description: 注文が行われた日時（劣化ディメンション）。
+      - name: quantity
+        description: 注文された商品の数量。
+      - name: line_item_total_price
+        description: その注文明細の合計金額（単価 x 数量）。
