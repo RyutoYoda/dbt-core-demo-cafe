@@ -23,7 +23,7 @@ select
     {{ dbt_utils.generate_surrogate_key(['store_id']) }} as store_key,
     {{ dbt_utils.generate_surrogate_key(['product_id']) }} as product_key,
 
-    -- 劣化したディメンション (Degenerate Dimension)
+    -- 日付ディメンション (Date Dimension)
     ordered_at,
 
     -- メジャー (事実)
