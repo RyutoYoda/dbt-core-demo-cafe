@@ -5,7 +5,9 @@
 
 ## 前提条件
 
-・VSCodeなどのIDE環境が用意されていること
+・
+[Cursor](https://cursor.com/ja) ,
+[VS Code](https://code.visualstudio.com/) などのIDE環境が用意されていること
 
 ## プロジェクトの目的
 
