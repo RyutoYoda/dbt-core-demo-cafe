@@ -1,0 +1,39 @@
+# .github/workflows/pr-agent.yml
+name: PR-Agent
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+jobs:
+  pr_agent_job:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    name: Run pr agent on every pull request, respond to user comments
+    steps:
+      - name: PR Agent action step
+        id: pragent
+        uses: qodo-ai/pr-agent@main
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+          # 機能の有効化（重複を避けるためAUTO_IMPROVEを無効化）
+          GITHUB_ACTION.AUTO_REVIEW: true
+          GITHUB_ACTION.AUTO_DESCRIBE: true
+          GITHUB_ACTION.AUTO_IMPROVE: false  # 重複を避けるため無効化
+          
+          # 使用モデル
+          CONFIG.MODEL: gpt-4o-mini
+          
+          # 強化された日本語設定
+          PR_DESCRIPTION.EXTRA_INSTRUCTIONS: "You must respond only in Japanese. All explanations, descriptions, and comments must be written in Japanese. Do not use any English words or phrases."
+          PR_REVIEWER.EXTRA_INSTRUCTIONS: "You must respond only in Japanese. All review comments, feedback, and suggestions must be written in Japanese. Do not use any English words or phrases."
+          PR_CODE_SUGGESTIONS.EXTRA_INSTRUCTIONS: "You must respond only in Japanese. All code suggestions and explanations must be written in Japanese. Do not use any English words or phrases."
+          
+          # 追加の日本語設定
+          PR_DESCRIPTION.LANGUAGE: "ja"
+          PR_REVIEWER.LANGUAGE: "ja"
