@@ -21,6 +21,7 @@ select
     {{ dbt_utils.generate_surrogate_key(['order_id']) }} as order_key,
     {{ dbt_utils.generate_surrogate_key(['customer_id']) }} as customer_key,
     {{ dbt_utils.generate_surrogate_key(['store_id']) }} as store_key,
+    {{ dbt_utils.generate_surrogate_key(['product_id']) }} as product_key,
 
     -- 日付ディメンション (Date Dimension)
     ordered_at,

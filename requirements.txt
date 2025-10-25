@@ -1,4 +1,0 @@
-dbt-duckdb
-streamlit
-duckdb
-pandas

@@ -5,9 +5,14 @@
 
 ## 前提条件
 
-・
-[Cursor](https://cursor.com/ja) ,
-[VS Code](https://code.visualstudio.com/) などのIDE環境が用意されていること
+- [Cursor](https://cursor.com/ja), [VS Code](https://code.visualstudio.com/) などのIDE環境が用意されていること
+- [uv](https://docs.astral.sh/uv/) がインストールされていること
+  ```bash
+  # macOS/Linuxの場合
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  # またはHomebrewの場合
+  brew install uv
+  ```
 
 ## プロジェクトの目的
 
@@ -52,65 +57,90 @@
 
 ## dbtの実行方法(CLI)
 
+### クイックスタート
+
+```bash
+# セットアップ
+make sync
+
+# フルビルド（seed + run + test）
+make build
+```
+
+### 各コマンド
+
+利用可能なコマンド一覧を確認：
+```bash
+make help
+```
+
 1.  **環境セットアップと依存関係のインストール**:
     ```bash
-    make up
+    make sync
     ```
-    これにより、Pythonの仮想環境が作成され、必要なパッケージ（`dbt-duckdb`など）がインストールされます。
+    Pythonの仮想環境が作成され、必要なパッケージ（`dbt-duckdb`など）がインストールされます。
 
-2.  **仮想環境のアクティベート**:
+2.  **シードデータのロード**:
     ```bash
-    source .venv/bin/activate
-    ```
-    このコマンドを実行すると、以降のdbtコマンドが仮想環境内で実行されるようになります。
-
-3.  **dbtパッケージのインストール**:
-    ```bash
-    dbt deps
+    make seed
     ```
 
-4.  **シードデータのロード**:
+3.  **モデルの実行**:
     ```bash
-    dbt seed
-    ```
-5.  **テストの実行**:
-    ```bash
-    dbt test
+    make run
     ```
 
-6.  **モデルの実行**:
+4.  **テストの実行**:
     ```bash
-    dbt run
-    ```
-7.  **Streamlitで可視化**:
-    ```bash
-    streamlit run app.py
+    make test
     ```
 
-8.  **ドキュメントの生成と表示**:
+5.  **フルビルド（seed + run + test）**:
     ```bash
-    dbt docs generate
-    dbt docs serve
+    make build
+    ```
+
+6.  **Streamlitで可視化**:
+    ```bash
+    make streamlit
+    ```
+
+7.  **ドキュメントの生成と表示**:
+    ```bash
+    make docs-generate
+    make docs-serve
     ```
     ブラウザで `http://localhost:8080` にアクセスすると、生成されたドキュメントを確認できます。
 
-10.  **DuckDBの操作**:
-     ```bash
-     #テーブルの一覧
-     duckdb dbt_core_demo_cafe.duckdb -c '.tables'
+8.  **DuckDBの操作**:
+    ```bash
+    make duckdb
+    ```
+    DuckDB CLIが起動します。以下のようなコマンドが使えます：
+    ```sql
+    SELECT * FROM fct_orders LIMIT 10;
+    .tables  -- テーブルの一覧
+    .exit    -- 終了
+    ```
 
-     #DuckDBに入る
-     duckdb dbt_core_demo_cafe.duckdb
-     
-     #テーブルの中を見る
-     SELECT * FROM fct_orders LIMIT 10;
-     ```
+9.  **クリーンアップ**:
+    ```bash
+    make clean
+    ```
+    仮想環境、dbtの成果物（`target`、`dbt_packages`、`logs`）を削除し、クリーンな状態に戻します。
 
-11.  **クリーンアップ**:
-     ```bash
-     make clean
-     ```
-     想環境、dbtの成果物（`target`、`dbt_packages`、`logs`）を削除し、クリーンな状態に戻します。
+### 仮想環境をアクティベートして直接実行する場合
+
+```bash
+# 環境のセットアップ
+uv sync
+source .venv/bin/activate
+
+# dbtコマンドを直接実行
+dbt seed
+dbt run
+dbt test
+```
 
 ## 今後の拡張
 

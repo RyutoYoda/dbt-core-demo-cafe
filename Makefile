@@ -1,45 +1,47 @@
-VENV_DIR := .venv
-PYTHON := $(VENV_DIR)/bin/python
-
-.PHONY: help up down create-secrets upload-to-gcs gcs-to-duckdb generate-duckdb-master-data
-
-# Check for python3
-ifeq ($(shell command -v python3),)
-$(error "python3 is not installed. Please install python3.")
-endif
+.PHONY: help sync deps seed run test build docs-generate docs-serve streamlit duckdb clean
 
 help:
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@echo "  up          		    Create virtualenv and install dependencies"
-	@echo "  down        		    Clean up the project"
-	@echo "  create-secrets  	    Create secrets.toml"
-	@echo "  upload-to-gcs 		    Upload the data to GCS"
-	@echo "  gcs-to-duckdb 		    Load the data from GCS to DuckDB"
-	@echo "  generate-duckdb-master-data	Generate master data for DuckDB"
+	@echo "Available commands:"
+	@echo "  make sync           - Install dependencies using uv"
+	@echo "  make deps           - Install dbt packages"
+	@echo "  make seed           - Load seed data"
+	@echo "  make run            - Run dbt models"
+	@echo "  make test           - Run dbt tests"
+	@echo "  make build          - Run seed, run, and test"
+	@echo "  make docs-generate  - Generate dbt documentation"
+	@echo "  make docs-serve     - Serve dbt documentation"
+	@echo "  make streamlit      - Run Streamlit app"
+	@echo "  make duckdb         - Open DuckDB CLI"
+	@echo "  make clean          - Clean up generated files"
 
-up:
-	test -d $(VENV_DIR) || python3 -m venv $(VENV_DIR)
-	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install -r requirements.txt
-	@echo "----------------------------------------------------------------------"
-	@echo "Virtual environment created and dependencies installed."
-	@echo "Run 'source $(VENV_DIR)/bin/activate' to activate the virtual environment."
-	@echo "You can now run dbt commands manually."
-	@echo "----------------------------------------------------------------------"
+sync:
+	uv sync
 
-down:
-	rm -rf dbt_packages dbt_modules logs target .venv
+deps: sync
+	uv run dbt deps
 
-create-secrets:
-	$(PYTHON) ./.github/workflows/scripts/create_secrets.py
+seed: deps
+	uv run dbt seed
 
-upload-to-gcs:
-	$(PYTHON) ./.github/workflows/scripts/upload_to_gcs.py
+run: deps
+	uv run dbt run
 
-gcs-to-duckdb:
-	$(PYTHON) ./.github/workflows/scripts/gcs_to_duckdb.py
+test: deps
+	uv run dbt test
 
-generate-duckdb-master-data:
-	$(PYTHON) ./.github/workflows/scripts/generate_duckdb_master_data.py
+build: seed run test
+
+docs-generate:
+	uv run dbt docs generate
+
+docs-serve:
+	uv run dbt docs serve
+
+streamlit:
+	uv run streamlit run app.py
+
+duckdb:
+	uv run duckdb dbt_core_demo_cafe.duckdb
+
+clean:
+	rm -rf .venv dbt_packages logs target
