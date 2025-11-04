@@ -13,6 +13,12 @@
   # またはHomebrewの場合
   brew install uv
   ```
+- [cargo-make](https://github.com/sagiegurari/cargo-make) がインストールされていること
+  ```bash
+  # Homebrewの場合（推奨）
+  brew install rust
+  brew install cargo-make
+  ```
 
 ## プロジェクトの目的
 
@@ -61,60 +67,79 @@
 
 ```bash
 # セットアップ
-make sync
+makers sync
 
-# フルビルド（seed + run + test）
-make build
+# フルビルド（dbt deps + dbt seed + dbt run + dbt test）
+makers build
 ```
+
+### dbtコマンドとmakersコマンドの対応表
+
+| dbtコマンド | makersコマンド | 説明 |
+|------------|---------------|------|
+| `dbt deps` | `makers dbt deps` | dbtパッケージのインストール |
+| `dbt seed` | `makers dbt seed` | シードデータのロード |
+| `dbt run` | `makers dbt run` | モデルの実行 |
+| `dbt test` | `makers dbt test` | テストの実行 |
+| `dbt docs generate` | `makers dbt docs generate` | ドキュメントの生成 |
+| `dbt docs serve` | `makers dbt docs serve` | ドキュメントの配信 |
+| - | `makers build` | フルビルド（deps + seed + run + test） |
+| - | `makers streamlit` | Streamlitアプリの起動 |
+| - | `makers duckdb` | DuckDB CLIの起動 |
 
 ### 各コマンド
 
 利用可能なコマンド一覧を確認：
 ```bash
-make help
+makers help
 ```
 
 1.  **環境セットアップと依存関係のインストール**:
     ```bash
-    make sync
+    makers sync
     ```
     Pythonの仮想環境が作成され、必要なパッケージ（`dbt-duckdb`など）がインストールされます。
 
-2.  **シードデータのロード**:
+2.  **dbtパッケージのインストール**:
     ```bash
-    make seed
+    makers dbt deps
     ```
 
-3.  **モデルの実行**:
+3.  **シードデータのロード**:
     ```bash
-    make run
+    makers dbt seed
     ```
 
-4.  **テストの実行**:
+4.  **モデルの実行**:
     ```bash
-    make test
+    makers dbt run
     ```
 
-5.  **フルビルド（seed + run + test）**:
+5.  **テストの実行**:
     ```bash
-    make build
+    makers dbt test
     ```
 
-6.  **Streamlitで可視化**:
+6.  **フルビルド（deps + seed + run + test）**:
     ```bash
-    make streamlit
+    makers build
     ```
 
-7.  **ドキュメントの生成と表示**:
+7.  **Streamlitで可視化**:
     ```bash
-    make docs-generate
-    make docs-serve
+    makers streamlit
+    ```
+
+8.  **ドキュメントの生成と表示**:
+    ```bash
+    makers dbt docs generate
+    makers dbt docs serve
     ```
     ブラウザで `http://localhost:8080` にアクセスすると、生成されたドキュメントを確認できます。
 
-8.  **DuckDBの操作**:
+9.  **DuckDBの操作**:
     ```bash
-    make duckdb
+    makers duckdb
     ```
     DuckDB CLIが起動します。以下のようなコマンドが使えます：
     ```sql
@@ -123,13 +148,15 @@ make help
     .exit    -- 終了
     ```
 
-9.  **クリーンアップ**:
+10. **クリーンアップ**:
     ```bash
-    make clean
+    makers clean
     ```
     仮想環境、dbtの成果物（`target`、`dbt_packages`、`logs`）を削除し、クリーンな状態に戻します。
 
 ### 仮想環境をアクティベートして直接実行する場合
+
+makersを使わずにdbtコマンドを直接実行したい場合：
 
 ```bash
 # 環境のセットアップ
@@ -137,9 +164,10 @@ uv sync
 source .venv/bin/activate
 
 # dbtコマンドを直接実行
-dbt seed
-dbt run
-dbt test
+dbt deps   # パッケージのインストール
+dbt seed   # シードデータのロード
+dbt run    # モデルの実行
+dbt test   # テストの実行
 ```
 
 ## 今後の拡張

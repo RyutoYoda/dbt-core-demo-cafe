@@ -10,6 +10,6 @@ with products as (
 )
 
 select
-    product_id as product_key,
+    {{ dbt_utils.generate_surrogate_key(['product_id']) }} as product_key,
     *
 from products
