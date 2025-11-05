@@ -8,5 +8,5 @@ dependencies = [
     "dbt-duckdb>=1.8.0",
     "streamlit>=1.32.0",
     "duckdb>=0.10.0",
-    "pandas>=2.0.0",
+    "polars>=0.20.0",
 ]

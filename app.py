@@ -1,15 +1,15 @@
 import streamlit as st
 import duckdb
-import pandas as pd
+import polars as pl
 
 # --- データベース接続とデータ読み込み --- #
 DB_PATH = "./dbt_core_demo_cafe.duckdb"
 
 @st.cache_data
 def load_data(query):
-    """dbtが生成したDuckDBデータベースに接続し、指定されたクエリを実行してPandas DataFrameを返す"""
+    """dbtが生成したDuckDBデータベースに接続し、指定されたクエリを実行してPolars DataFrameを返す"""
     conn = duckdb.connect(database=DB_PATH, read_only=True)
-    df = conn.execute(query).fetchdf()
+    df = conn.execute(query).pl()
     conn.close()
     return df
 
@@ -28,19 +28,35 @@ dim_products_df = load_data("SELECT product_key, category FROM dim_products")
 
 # 1. 日別売上 (Daily Sales)
 # ファクトテーブルの`ordered_at`を日付に丸め、`line_item_total_price`を合計する
-daily_sales_df = fct_df.copy()
-daily_sales_df['ordered_date'] = pd.to_datetime(daily_sales_df['ordered_at']).dt.date
-daily_sales = daily_sales_df.groupby('ordered_date')['line_item_total_price'].sum().reset_index()
+daily_sales = (
+    fct_df
+    .with_columns(
+        pl.col("ordered_at").cast(pl.Date).alias("ordered_date")
+    )
+    .group_by("ordered_date")
+    .agg(pl.col("line_item_total_price").sum())
+    .sort("ordered_date")
+)
 
 # 2. 店舗別売上 (Sales by Store)
 # ファクトテーブルと店舗ディメンションを`store_key`でマージ（結合）する
-store_sales_df = pd.merge(fct_df, dim_stores_df, on='store_key')
-store_sales = store_sales_df.groupby('store_name')['line_item_total_price'].sum().reset_index()
+store_sales = (
+    fct_df
+    .join(dim_stores_df, on="store_key")
+    .group_by("store_name")
+    .agg(pl.col("line_item_total_price").sum())
+    .sort("line_item_total_price", descending=True)
+)
 
 # 3. 商品カテゴリ別売上 (Sales by Product Category)
 # ファクトテーブルと商品ディメンションを`product_key`でマージ（結合）する
-category_sales_df = pd.merge(fct_df, dim_products_df, on='product_key')
-category_sales = category_sales_df.groupby('category')['line_item_total_price'].sum().reset_index()
+category_sales = (
+    fct_df
+    .join(dim_products_df, on="product_key")
+    .group_by("category")
+    .agg(pl.col("line_item_total_price").sum())
+    .sort("line_item_total_price", descending=True)
+)
 
 
 # --- グラフの表示 --- #
@@ -52,11 +68,11 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("日別売上推移")
-    st.line_chart(daily_sales.set_index('ordered_date'), color="#0072B2")
+    st.line_chart(daily_sales.to_pandas().set_index('ordered_date'), color="#0072B2")
 
 with col2:
     st.subheader("店舗別売上")
-    st.bar_chart(store_sales.set_index('store_name'), color="#009E73")
+    st.bar_chart(store_sales.to_pandas().set_index('store_name'), color="#009E73")
 
 st.subheader("商品カテゴリ別売上")
-st.bar_chart(category_sales.set_index('category'), color="#E69F00")
+st.bar_chart(category_sales.to_pandas().set_index('category'), color="#E69F00")
