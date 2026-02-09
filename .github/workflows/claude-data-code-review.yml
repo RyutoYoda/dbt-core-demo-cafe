@@ -1,0 +1,80 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - "models/**/*.sql"
+      - "models/**/*.yml"
+      - "macros/**/*.sql"
+      - "tests/**/*.sql"
+      - "seeds/**/*.csv"
+      - "snapshots/**/*.sql"
+      - "dbt_project.yml"
+      - "packages.yml"
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          allowed_bots: "dependabot,github-actions,claude"
+
+          claude_args: |
+            --model 'sonnet[1m]'
+            --allowedTools mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),WebFetch,WebSearch
+
+          prompt: |
+            このPRをdbt・データエンジニアリングの観点から日本語でレビューしてください。
+
+            ## SQLコード品質
+            - CTEの適切な使用と可読性
+            - JOIN条件の正確性とパフォーマンス
+            - WHERE句の効率性（SARGability）
+            - ウィンドウ関数の適切な使用
+
+            ## dbtベストプラクティス
+            - ref()とsource()の正しい使用
+            - マテリアライゼーション戦略（table/view/incremental/ephemeral）
+            - 増分モデルのis_incremental()ロジック
+            - サロゲートキー生成の一貫性
+
+            ## データモデリング
+            - 命名規則（stg_/int_/dim_/fct_プレフィックス）
+            - 適切なグレイン（粒度）の定義
+            - ディメンショナルモデリングの原則
+
+            ## テストとドキュメント
+            - schema.ymlでのテスト定義（unique, not_null, relationships）
+            - カラムとモデルのdescription
+            - カスタムテストの必要性
+
+            ## パフォーマンスとセキュリティ
+            - 大規模テーブルのフィルタリング
+            - PII/機密データの取り扱い
+            - ウェアハウス固有の最適化
+
+            ## 機密情報チェック（重要）
+            - ハードコードされた認証情報（API キー、パスワード、トークン）
+            - 接続文字列やシークレットの直接記述
+            - 個人情報（メールアドレス、電話番号、住所）
+            - 内部IPアドレスやエンドポイント
+            - 本番環境の具体的な設定値
+
+            機密情報が検出された場合は最優先で指摘してください。
+            建設的で具体的なフィードバックをお願いします。
