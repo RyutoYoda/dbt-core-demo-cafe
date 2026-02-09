@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: |
+      注文データのステージングモデル。
+      日本語カラム名を英語に正規化し、下流の中間モデルで使用されます。
+    columns:
+      - name: order_id
+        description: 注文を一意に識別するID（主キー）
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: 注文した会員のID
+        tests:
+          - not_null
+      - name: store_id
+        description: 注文を受けた店舗のID
+        tests:
+          - not_null
+      - name: ordered_at
+        description: 注文日時
+        tests:
+          - not_null
+      - name: order_method
+        description: 注文方法（店内/テイクアウト/デリバリー等）
+      - name: satisfaction_level
+        description: |
+          顧客満足度スコア（1-5）。
+          null値は「未評価」を意味し、0（最低評価）とは区別されます。
+          下流での集計時にnullは適切に除外されます。
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+              quote: false
+      - name: usage_scenario
+        description: 利用シーン
