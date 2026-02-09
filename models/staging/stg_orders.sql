@@ -11,7 +11,7 @@ select
     "店舗ID" as store_id,
     "注文日時" as ordered_at,
     "注文方法" as order_method,
-    "満足度" as satisfaction_level,
+    coalesce("満足度", 0) as satisfaction_level,
     "利用シーン" as usage_scenario
 from {{ source('main', '注文') }}
 
