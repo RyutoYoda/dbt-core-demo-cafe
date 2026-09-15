@@ -85,6 +85,7 @@ makers build
 | `dbt docs serve` | `makers dbt docs serve` | ドキュメントの配信 |
 | - | `makers build` | フルビルド（deps + seed + run + test） |
 | - | `makers streamlit` | Streamlitアプリの起動 |
+| - | `makers charts` | dbt chartsダッシュボードの配信 |
 | - | `makers duckdb` | DuckDB CLIの起動 |
 
 ### 各コマンド
@@ -130,6 +131,14 @@ makers help
     makers streamlit
     ```
 
+7-b. **dbt chartsで可視化**（Streamlitと同じデータマートをYAMLで宣言的に可視化）:
+    ```bash
+    uv tool install dbt-charts   # 初回のみ。`dct` コマンドが入る
+    makers charts                # http://localhost:<自動採番> でダッシュボードを配信
+    dct render charts/cafe_sales.yml --format png   # 画像として書き出す場合
+    ```
+    ボード定義は `charts/cafe_sales.yml`、接続先は `dbt_charts.yml` の `sources:` に登録しています。
+
 8.  **ドキュメントの生成と表示**:
     ```bash
     makers dbt docs generate
@@ -169,6 +178,30 @@ dbt seed   # シードデータのロード
 dbt run    # モデルの実行
 dbt test   # テストの実行
 ```
+
+## おまけ: 可視化のもう一つの選択肢（dbt charts）
+
+このリポジトリには、同じデータマート（`fct_order_items` + `dim_*`）を
+**YAML 1枚で宣言的に可視化する** 例も入れてあります。
+
+- ボード定義: [`charts/cafe_sales.yml`](charts/cafe_sales.yml)
+- 接続先の登録: [`dbt_charts.yml`](dbt_charts.yml)（`sources:` に DuckDB を指定）
+
+Streamlit 版（`app.py`）が Python で集計と描画を書くのに対して、
+dbt charts は **集計は SQL（`queries:`）／見た目は YAML（`charts:` と `rows:`）** に分かれます。
+Python のロジックが要らないぶん、差分レビューが「SQLが変わったか / 見た目が変わったか」で読めます。
+
+```bash
+uv tool install dbt-charts   # 初回のみ。`dct` コマンドが入る
+makers charts                # ローカルでダッシュボードを配信
+dct validate                 # CI で回せるボードの構文チェック
+dct render charts/cafe_sales.yml --format png   # 画像/HTML として書き出し
+```
+
+なお `type: duckdb` はローカルのファイルを読む形式なので、
+このボードは手元での表示と静的書き出し向けです。
+dbt charts Cloud で共有する場合は BigQuery / PostgreSQL / Redshift / Snowflake に載せるか、
+テーブルを Parquet / CSV に書き出して `sources:` に登録し直す必要があります。
 
 ## 今後の拡張
 

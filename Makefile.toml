@@ -21,6 +21,7 @@ echo ""
 echo "その他のコマンド:"
 echo "  makers build          - deps + seed + run + test を一括実行"
 echo "  makers streamlit      - Streamlitアプリを起動"
+echo "  makers charts         - dbt chartsのダッシュボードを配信"
 echo "  makers duckdb         - DuckDB CLIを起動"
 echo "  makers clean          - 生成ファイルをクリーンアップ"
 '''
@@ -58,6 +59,11 @@ uv run dbt test
 description = "Streamlitアプリを起動"
 command = "uv"
 args = ["run", "streamlit", "run", "app.py"]
+
+[tasks.charts]
+description = "dbt chartsのダッシュボードを配信"
+command = "dct"
+args = ["serve"]
 
 [tasks.duckdb]
 description = "DuckDB CLIを起動"

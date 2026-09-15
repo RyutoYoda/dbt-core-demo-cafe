@@ -1,0 +1,10 @@
+# dbt charts のプロジェクト設定。sources: がボードの接続先レジストリで、
+# ボード側は `source: cafe` のように名前で参照する。
+
+sources:
+  # dbt（dbt-duckdb）が生成したローカルの DuckDB ファイルをそのまま読む。
+  # Streamlit 版 app.py が見ているのと同じ ./dbt_core_demo_cafe.duckdb / main スキーマ。
+  cafe:
+    type: duckdb
+    path: ./dbt_core_demo_cafe.duckdb
+    schema: main
