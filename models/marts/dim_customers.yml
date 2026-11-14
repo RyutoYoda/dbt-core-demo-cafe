@@ -3,9 +3,15 @@ version: 2
 models:
   - name: dim_customers
     description: "顧客に関するディメンションテーブルです。顧客の基本情報と、初回注文日、最終注文日、注文回数などの集計情報を提供します。顧客分析の基礎となります。"
+    semantic_model:
+      enabled: true
+      name: cafe_customers
     columns:
       - name: customer_key
         description: "顧客を一意に識別する代理キーです。dbt_utils.generate_surrogate_keyによって生成されます。"
+        entity:
+          type: primary
+          name: customer
         tests:
           - unique
           - not_null
@@ -13,7 +19,13 @@ models:
         description: "元のデータソースにおける顧客IDです。"
       - name: first_order_at
         description: "顧客の初回注文日時です。顧客の獲得時期やライフサイクル分析に利用できます。"
+        granularity: day
+        dimension:
+          type: time
       - name: last_order_at
         description: "顧客の最終注文日時です。顧客の活動状況や離反予測に利用できます。"
+        granularity: day
+        dimension:
+          type: time
       - name: number_of_orders
         description: "顧客が行ったユニークな注文の総数です。顧客の購買頻度を測る指標となります。"

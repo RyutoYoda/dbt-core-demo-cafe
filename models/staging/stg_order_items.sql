@@ -9,4 +9,4 @@ select
     "注文ID" as order_id,
     "商品ID" as product_id,
     "数量" as quantity
-from {{ source('main', '注文明細') }}
+from {{ source('main', 'order_items') }}

@@ -32,7 +32,8 @@ models:
           下流での集計時にnullは適切に除外されます。
         tests:
           - accepted_values:
-              values: [1, 2, 3, 4, 5]
-              quote: false
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
       - name: usage_scenario
         description: 利用シーン

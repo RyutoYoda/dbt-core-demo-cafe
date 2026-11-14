@@ -71,6 +71,9 @@ makers sync
 
 # フルビルド（dbt deps + dbt seed + dbt run + dbt test）
 makers build
+
+# 列レベルリネージを生成してdbt Docs v2を表示
+makers lineage
 ```
 
 ### dbtコマンドとmakersコマンドの対応表
@@ -84,6 +87,7 @@ makers build
 | `dbt docs generate` | `makers dbt docs generate` | ドキュメントの生成 |
 | `dbt docs serve` | `makers dbt docs serve` | ドキュメントの配信 |
 | - | `makers build` | フルビルド（deps + seed + run + test） |
+| - | `makers lineage` | フルビルド後に列レベルリネージを生成してDocs v2を表示 |
 | - | `makers streamlit` | Streamlitアプリの起動 |
 | - | `makers charts` | dbt chartsダッシュボードの配信 |
 | - | `makers duckdb` | DuckDB CLIの起動 |
@@ -99,7 +103,8 @@ makers help
     ```bash
     makers sync
     ```
-    Pythonの仮想環境が作成され、必要なパッケージ（`dbt-duckdb`など）がインストールされます。
+    Pythonの仮想環境が作成され、dbt v2と必要なPythonパッケージがインストールされます。
+    この教育用プロジェクトは列レベルリネージ生成のためフル版`dbt`を使います。Apache 2.0版の`dbt-oss`にはStrict静的解析エンジンが含まれません。
 
 2.  **dbtパッケージのインストール**:
     ```bash
@@ -139,14 +144,24 @@ makers help
     ```
     ボード定義は `charts/cafe_sales.yml`、接続先は `dbt_charts.yml` の `sources:` に登録しています。
 
-8.  **ドキュメントの生成と表示**:
+8.  **列レベルリネージとdbt Docs v2**:
     ```bash
-    makers dbt docs generate
+    makers lineage
+    ```
+    `makers lineage`はフルビルドの後、Strict静的解析とInformation Schemaを使って列レベルリネージを生成し、Docs v2を起動します。ブラウザで `http://localhost:8580` を開き、モデルを選ぶと列ごとの入出力関係を確認できます。
+    個別に実行する場合は、次の順で実行します。
+    ```bash
+    makers dbt compile --generate-info-schema --static-analysis strict
+    makers dbt docs generate --no-compile
     makers dbt docs serve
     ```
-    ブラウザで `http://localhost:8080` にアクセスすると、生成されたドキュメントを確認できます。
 
-9.  **DuckDBの操作**:
+9.  **セマンティックモデルとメトリクス**:
+    MartのYAMLにエンティティ、ディメンション、メトリクスを定義しています。`fct_order_items` の総売上・販売点数・注文件数を `ordered_at` の日付粒度で集計でき、商品・店舗・顧客のディメンションとエンティティ経由でつながります。Docs v2のモデル詳細から定義を確認できます。
+
+    このリポジトリはDuckDBを使うローカル教材です。定義のコンパイルとDocsでの確認はできますが、MetricFlowによるメトリクスクエリ実行はDuckDBアダプターが対象外のため、この構成では実行できません。MetricFlowのクエリを試す場合は、対応するデータウェアハウスが必要です。
+
+10.  **DuckDBの操作**:
     ```bash
     makers duckdb
     ```
@@ -157,7 +172,7 @@ makers help
     .exit    -- 終了
     ```
 
-10. **クリーンアップ**:
+11. **クリーンアップ**:
     ```bash
     makers clean
     ```

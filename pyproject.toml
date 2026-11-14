@@ -5,7 +5,7 @@ description = "dbt project for analyzing cafe operation data"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "dbt-duckdb>=1.8.0",
+    "dbt==2.0.11",
     "streamlit>=1.32.0",
     "duckdb>=0.10.0",
     "polars>=0.20.0",

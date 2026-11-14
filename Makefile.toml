@@ -20,6 +20,7 @@ echo "  makers dbt docs serve    - dbtドキュメントを配信"
 echo ""
 echo "その他のコマンド:"
 echo "  makers build          - deps + seed + run + test を一括実行"
+echo "  makers lineage        - v2列レベルリネージとセマンティック定義をDocsで表示"
 echo "  makers streamlit      - Streamlitアプリを起動"
 echo "  makers charts         - dbt chartsのダッシュボードを配信"
 echo "  makers duckdb         - DuckDB CLIを起動"
@@ -53,6 +54,16 @@ uv run dbt deps
 uv run dbt seed
 uv run dbt run
 uv run dbt test
+'''
+
+[tasks.lineage]
+description = "列レベルリネージを生成してdbt Docs v2を表示"
+dependencies = ["build"]
+clear = true
+script = '''
+uv run dbt compile --generate-info-schema --static-analysis strict
+uv run dbt docs generate --no-compile
+uv run dbt docs serve
 '''
 
 [tasks.streamlit]

@@ -3,9 +3,15 @@ version: 2
 models:
   - name: dim_products
     description: "商品に関するディメンションテーブルです。商品の基本情報（商品名、カテゴリ、価格など）を提供します。商品分析の基礎となります。"
+    semantic_model:
+      enabled: true
+      name: cafe_products
     columns:
       - name: product_key
         description: "商品を一意に識別する代理キーです。dbt_utils.generate_surrogate_keyによって生成されます。"
+        entity:
+          type: primary
+          name: product
         tests:
           - unique
           - not_null
@@ -13,9 +19,15 @@ models:
         description: "元のデータソースにおける商品IDです。"
       - name: product_name
         description: "商品の名称です。"
+        dimension:
+          type: categorical
       - name: category
         description: "商品のカテゴリです（例: ドリンク、フード、グッズなど）。"
+        dimension:
+          type: categorical
       - name: price
         description: "商品の単価です。"
       - name: is_customizable
         description: "商品がカスタマイズ可能かどうかを示すフラグです（True/False）。"
+        dimension:
+          type: categorical
