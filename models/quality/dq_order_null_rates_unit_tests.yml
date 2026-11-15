@@ -1,0 +1,18 @@
+unit_tests:
+  - name: test_order_null_rates
+    description: 品質プロファイルがNULL件数とNULL率を正しく計算することを確認します。
+    model: dq_order_null_rates
+    given:
+      - input: ref('stg_orders')
+        rows:
+          - {order_id: 1, customer_id: C001, store_id: 1, ordered_at: '2025-01-01 09:00:00', order_method: 店頭, satisfaction_level: 5, usage_scenario: 仕事}
+          - {order_id: 2, customer_id: C002, store_id: 2, ordered_at: '2025-01-02 10:00:00', order_method: 店頭, satisfaction_level: null, usage_scenario: null}
+    expect:
+      rows:
+        - {model_name: stg_orders, column_name: order_id, row_count: 2, null_count: 0, null_rate_pct: 0.0}
+        - {model_name: stg_orders, column_name: customer_id, row_count: 2, null_count: 0, null_rate_pct: 0.0}
+        - {model_name: stg_orders, column_name: store_id, row_count: 2, null_count: 0, null_rate_pct: 0.0}
+        - {model_name: stg_orders, column_name: ordered_at, row_count: 2, null_count: 0, null_rate_pct: 0.0}
+        - {model_name: stg_orders, column_name: order_method, row_count: 2, null_count: 0, null_rate_pct: 0.0}
+        - {model_name: stg_orders, column_name: satisfaction_level, row_count: 2, null_count: 1, null_rate_pct: 50.0}
+        - {model_name: stg_orders, column_name: usage_scenario, row_count: 2, null_count: 1, null_rate_pct: 50.0}

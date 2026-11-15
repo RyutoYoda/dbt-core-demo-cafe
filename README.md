@@ -72,6 +72,9 @@ makers sync
 # フルビルド（dbt deps + dbt seed + dbt run + dbt test）
 makers build
 
+# dbt v2の品質チェック一式
+makers quality
+
 # 列レベルリネージを生成してdbt Docs v2を表示
 makers lineage
 ```
@@ -87,6 +90,7 @@ makers lineage
 | `dbt docs generate` | `makers dbt docs generate` | ドキュメントの生成 |
 | `dbt docs serve` | `makers dbt docs serve` | ドキュメントの配信 |
 | - | `makers build` | フルビルド（deps + seed + run + test） |
+| - | `makers quality` | lint、プロジェクトcheck、静的解析、unit/data tests、モデル契約 |
 | - | `makers lineage` | フルビルド後に列レベルリネージを生成してDocs v2を表示 |
 | - | `makers streamlit` | Streamlitアプリの起動 |
 | - | `makers charts` | dbt chartsダッシュボードの配信 |
@@ -156,12 +160,22 @@ makers help
     makers dbt docs serve
     ```
 
-9.  **セマンティックモデルとメトリクス**:
+9.  **dbt v2の品質チェック**:
+    ```bash
+    makers quality
+    ```
+    `dbt lint`はSQLの規約、`dbt check`はモデル説明や契約などのプロジェクト規約、`dbt build`は静的解析・ユニットテスト・データテスト・モデル契約を確認します。`dbt build`にはプロジェクトcheckが含まれるため、個別に試す場合は `makers dbt check` を実行します。
+
+    `dq_order_null_rates`モデルで注文データ各列のNULL件数とNULL率を確認できます。`makers dbt show --select dq_order_null_rates`で結果を表示できます。`satisfaction_level`と`usage_scenario`には許容NULL率を指定した再利用可能なデータテストも設定しています。
+
+    鮮度チェックはdbt v2にありますが、DuckDBアダプターでは現時点で未実装のため、この教材の一括タスクには含めていません。Snowflakeなど対応アダプターで使う場合は、取り込み時刻列を用意して `dbt freshness` を実行します。
+
+10.  **セマンティックモデルとメトリクス**:
     MartのYAMLにエンティティ、ディメンション、メトリクスを定義しています。`fct_order_items` の総売上・販売点数・注文件数を `ordered_at` の日付粒度で集計でき、商品・店舗・顧客のディメンションとエンティティ経由でつながります。Docs v2のモデル詳細から定義を確認できます。
 
     このリポジトリはDuckDBを使うローカル教材です。定義のコンパイルとDocsでの確認はできますが、MetricFlowによるメトリクスクエリ実行はDuckDBアダプターが対象外のため、この構成では実行できません。MetricFlowのクエリを試す場合は、対応するデータウェアハウスが必要です。
 
-10.  **DuckDBの操作**:
+11.  **DuckDBの操作**:
     ```bash
     makers duckdb
     ```
@@ -172,7 +186,7 @@ makers help
     .exit    -- 終了
     ```
 
-11. **クリーンアップ**:
+12. **クリーンアップ**:
     ```bash
     makers clean
     ```

@@ -27,7 +27,7 @@ select
     ordered_at,
 
     -- メジャー (事実)
-    quantity,
-    total_price as line_item_total_price
+    cast(quantity as bigint) as quantity,
+    cast(total_price as bigint) as line_item_total_price
 
 from order_items

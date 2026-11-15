@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: dq_order_null_rates
+    description: 注文ステージングの列ごとのレコード数・NULL数・NULL率を一覧にする品質プロファイル。
+    columns:
+      - name: model_name
+        description: プロファイル対象のdbtモデル。
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: column_name
+        description: NULL率を測定した列。
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: row_count
+        description: 対象モデルのレコード数。
+        data_type: BIGINT
+        tests:
+          - not_null
+      - name: null_count
+        description: 対象列のNULLレコード数。
+        data_type: BIGINT
+        tests:
+          - not_null
+      - name: null_rate_pct
+        description: 対象列のNULL率（パーセント）。
+        data_type: DOUBLE
+        tests:
+          - not_null

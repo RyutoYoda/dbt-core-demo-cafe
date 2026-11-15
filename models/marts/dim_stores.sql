@@ -14,5 +14,8 @@ with stores as (
 
 select
     {{ dbt_utils.generate_surrogate_key(['store_id']) }} as store_key,
-    *
+    cast(store_id as bigint) as store_id,
+    store_name,
+    location,
+    opened_at
 from stores

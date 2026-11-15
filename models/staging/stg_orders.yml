@@ -35,5 +35,12 @@ models:
               arguments:
                 values: [1, 2, 3, 4, 5]
                 quote: false
+          - null_percentage_below:
+              arguments:
+                max_percentage: 20
       - name: usage_scenario
         description: 利用シーン
+        tests:
+          - null_percentage_below:
+              arguments:
+                max_percentage: 15

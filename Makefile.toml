@@ -20,6 +20,7 @@ echo "  makers dbt docs serve    - dbtドキュメントを配信"
 echo ""
 echo "その他のコマンド:"
 echo "  makers build          - deps + seed + run + test を一括実行"
+echo "  makers quality        - v2品質チェック一式（lint + check + test + contracts）"
 echo "  makers lineage        - v2列レベルリネージとセマンティック定義をDocsで表示"
 echo "  makers streamlit      - Streamlitアプリを起動"
 echo "  makers charts         - dbt chartsのダッシュボードを配信"
@@ -64,6 +65,16 @@ script = '''
 uv run dbt compile --generate-info-schema --static-analysis strict
 uv run dbt docs generate --no-compile
 uv run dbt docs serve
+'''
+
+[tasks.quality]
+description = "dbt v2のlint・checks・テスト・鮮度チェックを実行"
+dependencies = ["sync"]
+clear = true
+script = '''
+uv run dbt deps
+uv run dbt lint
+uv run dbt build --static-analysis strict --batch-tests
 '''
 
 [tasks.streamlit]

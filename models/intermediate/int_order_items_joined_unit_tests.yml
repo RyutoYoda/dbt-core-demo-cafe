@@ -1,0 +1,59 @@
+unit_tests:
+  - name: test_order_items_join_and_line_total
+    description: 注文・注文明細・商品が結合され、明細金額が数量と価格の積になることを確認します。
+    model: int_order_items_joined
+    given:
+      - input: ref('stg_orders')
+        rows:
+          - order_id: 101
+            customer_id: 1001
+            store_id: 11
+            ordered_at: '2025-02-01 09:30:00'
+            order_method: 店内
+            satisfaction_level: 5
+            usage_scenario: 朝食
+          - order_id: 102
+            customer_id: 1002
+            store_id: 12
+            ordered_at: '2025-02-02 12:15:00'
+            order_method: テイクアウト
+            satisfaction_level: 4
+            usage_scenario: 昼食
+      - input: ref('stg_order_items')
+        rows:
+          - order_id: 101
+            product_id: 201
+            quantity: 2
+          - order_id: 102
+            product_id: 202
+            quantity: 3
+      - input: ref('stg_products')
+        rows:
+          - product_id: 201
+            price: 250
+          - product_id: 202
+            price: 400
+    expect:
+      rows:
+        - order_id: 101
+          customer_id: 1001
+          store_id: 11
+          ordered_at: '2025-02-01 09:30:00'
+          order_method: 店内
+          satisfaction_level: 5
+          usage_scenario: 朝食
+          product_id: 201
+          quantity: 2
+          price: 250
+          total_price: 500
+        - order_id: 102
+          customer_id: 1002
+          store_id: 12
+          ordered_at: '2025-02-02 12:15:00'
+          order_method: テイクアウト
+          satisfaction_level: 4
+          usage_scenario: 昼食
+          product_id: 202
+          quantity: 3
+          price: 400
+          total_price: 1200
