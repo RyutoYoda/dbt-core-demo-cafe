@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: int_order_items_joined
+    description: 注文・注文明細・商品を結合し、明細単位の数量と金額を計算する中間モデル。

@@ -1,7 +1,7 @@
 /*
 このモデルは、店舗マスタデータを扱うためのステージングモデルです。
 
-- `source('main', '店舗マスタ')`: 'main'スキーマにある'店舗マスタ'テーブルを参照しています。
+- `source('main', 'stores_master')`: 'main'スキーマにある'店舗マスタ'テーブルを参照しています。
 - カラム名の変更: 日本語のカラム名を英語にリネームしています。
 */
 
@@ -10,4 +10,4 @@ select
     "店舗名" as store_name,
     "所在地" as location,
     "オープン日" as opened_at
-from {{ source('main', '店舗マスタ') }}
+from {{ source('main', 'stores_master') }}

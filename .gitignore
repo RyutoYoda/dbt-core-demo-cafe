@@ -236,3 +236,7 @@ package-lock.yml
 
 # uv
 uv.lock
+
+# dbt charts
+renders/
+dbt_internal_packages/

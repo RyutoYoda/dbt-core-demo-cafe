@@ -11,5 +11,9 @@ with products as (
 
 select
     {{ dbt_utils.generate_surrogate_key(['product_id']) }} as product_key,
-    *
+    cast(product_id as bigint) as product_id,
+    product_name,
+    category,
+    cast(price as bigint) as price,
+    is_customizable
 from products

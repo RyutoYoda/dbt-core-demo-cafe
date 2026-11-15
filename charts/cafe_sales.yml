@@ -1,0 +1,166 @@
+# 架空カフェ売上分析ボード
+#
+# Streamlit 版 (app.py) と同じスタースキーマ（fct_order_items + dim_*）を、
+# dbt charts の宣言的 YAML で可視化したもの。
+# 計算はすべて SQL 側（queries）に置き、charts は描画だけを担当する。
+
+title: 架空カフェ売上分析ダッシュボード☕️
+notes: >
+  dbtで構築したスタースキーマ（fct_order_itemsと3つのdim_*テーブル）の可視化。
+  Streamlit版 app.py と同じ指標を dbt charts で宣言的に定義したもの。
+tags: [cafe, sales, demo]
+
+source: cafe
+
+queries:
+  # 主要KPI（1行だけ返す）
+  kpi_summary:
+    notes: 全期間の総売上・注文件数・平均注文単価
+    sql: |
+      select
+          sum(line_item_total_price)                                    as total_sales,
+          count(distinct order_key)                                     as order_count,
+          sum(line_item_total_price) * 1.0 / count(distinct order_key)  as avg_order_value
+      from main.fct_order_items
+
+  # 1. 日別売上
+  daily_sales:
+    notes: ordered_at を日付に丸めた日次売上
+    sql: |
+      select
+          cast(ordered_at as date)      as ordered_date,
+          sum(line_item_total_price)    as sales
+      from main.fct_order_items
+      group by 1
+      order by 1
+
+  # 2. 店舗別売上
+  store_sales:
+    notes: dim_stores と結合した店舗別売上
+    sql: |
+      select
+          s.store_name,
+          sum(f.line_item_total_price) as sales
+      from main.fct_order_items as f
+      join main.dim_stores as s on f.store_key = s.store_key
+      group by 1
+      order by 2 desc
+
+  # 3. 商品カテゴリ別売上
+  category_sales:
+    notes: dim_products と結合したカテゴリ別売上・販売数量
+    sql: |
+      select
+          p.category,
+          sum(f.line_item_total_price) as sales,
+          sum(f.quantity)              as quantity
+      from main.fct_order_items as f
+      join main.dim_products as p on f.product_key = p.product_key
+      group by 1
+      order by 2 desc
+
+charts:
+  kpi_total_sales:
+    type: kpi
+    query: kpi_summary
+    label: 総売上（円）
+    value: total_sales
+    style:
+      value:
+        format: integer
+
+  kpi_order_count:
+    type: kpi
+    query: kpi_summary
+    label: 注文件数
+    value: order_count
+    style:
+      value:
+        format: integer
+
+  kpi_avg_order_value:
+    type: kpi
+    query: kpi_summary
+    label: 平均注文単価（円）
+    value: avg_order_value
+    style:
+      value:
+        format: integer
+
+  daily_sales_trend:
+    type: line
+    query: daily_sales
+    title: 日別売上推移
+    x: ordered_date
+    y: sales
+    x_label: 注文日
+    y_label: 売上（円）
+    style:
+      color:
+        static: "#0072B2"
+      number_format: integer
+      time_format: "%-m/%-d"
+
+  sales_by_store:
+    type: bar
+    query: store_sales
+    title: 店舗別売上
+    x: store_name
+    y: sales
+    style:
+      # 日本語の長い店舗名は横棒の軸ラベル欄に収まらず切れるため、
+      # 縦棒＋ラベル傾斜で全文が読めるようにする。
+      orientation: vertical
+      color:
+        static: "#009E73"
+      number_format: integer
+      axis_x:
+        labels:
+          angle: -30
+          max_width: 220
+      marks:
+        bar:
+          labels:
+            visible: true
+            position: above
+            format: integer
+
+  sales_by_category:
+    type: bar
+    query: category_sales
+    title: 商品カテゴリ別売上
+    x: category
+    y: sales
+    style:
+      orientation: vertical
+      color:
+        static: "#E69F00"
+      number_format: integer
+      marks:
+        bar:
+          labels:
+            visible: true
+            position: above
+            format: integer
+
+  # 色だけに頼らず数値でも読めるようにするテーブルビュー
+  category_detail:
+    type: table
+    query: category_sales
+    title: カテゴリ別 売上・販売数量
+    style:
+      columns:
+        category:
+          label: カテゴリ
+        sales:
+          label: 売上（円）
+          format: integer
+        quantity:
+          label: 販売数量
+          format: integer
+
+rows:
+  - title: 主要KPI
+    cols: [kpi_total_sales, kpi_order_count, kpi_avg_order_value]
+  - cols: [daily_sales_trend, sales_by_store]
+  - cols: [sales_by_category, category_detail]

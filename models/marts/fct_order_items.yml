@@ -6,31 +6,99 @@ models:
       「注文明細」を粒度とするファクトテーブル。
       各行が、一つの注文に含まれる特定の商品明細を表します。
       商品レベルの詳細な分析に使用します。
+    config:
+      contract:
+        enforced: true
+    semantic_model:
+      enabled: true
+      name: cafe_order_items
+    agg_time_dimension: ordered_at
     columns:
       - name: order_item_key
         description: 注文明細を一意に識別する代理キー（主キー）。
+        data_type: VARCHAR
+        entity:
+          type: primary
+          name: order_item
         tests:
           - unique
           - not_null
       - name: order_key
         description: 注文ファクトテーブルへの代理キー。
+        data_type: VARCHAR
+        entity:
+          type: foreign
+          name: order
         tests:
           - not_null
       - name: customer_key
         description: 顧客ディメンションへの代理キー。
+        data_type: VARCHAR
+        entity:
+          type: foreign
+          name: customer
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
       - name: store_key
         description: 店舗ディメンションへの代理キー。
+        data_type: VARCHAR
+        entity:
+          type: foreign
+          name: store
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_stores')
+                field: store_key
       - name: product_key
         description: 商品ディメンションへの代理キー。
+        data_type: VARCHAR
+        entity:
+          type: foreign
+          name: product
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_products')
+                field: product_key
       - name: ordered_at
         description: 注文が行われた日時（劣化ディメンション）。
+        data_type: TIMESTAMP
+        granularity: day
+        dimension:
+          type: time
       - name: quantity
         description: 注文された商品の数量。
+        data_type: BIGINT
+        tests:
+          - not_null
       - name: line_item_total_price
         description: その注文明細の合計金額（単価 x 数量）。
+        data_type: BIGINT
+        tests:
+          - not_null
+    metrics:
+      - name: gross_sales
+        description: 注文明細の合計金額を合算した売上。
+        type: simple
+        label: 総売上
+        agg: sum
+        expr: line_item_total_price
+      - name: items_sold
+        description: 販売した商品の数量。
+        type: simple
+        label: 販売点数
+        agg: sum
+        expr: quantity
+      - name: order_count
+        description: ユニークな注文数。
+        type: simple
+        label: 注文件数
+        agg: count_distinct
+        expr: order_key

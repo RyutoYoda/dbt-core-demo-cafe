@@ -1,0 +1,7 @@
+[sqlfluff]
+dialect = duckdb
+templater = dbt
+rules = CP01, RF02
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower

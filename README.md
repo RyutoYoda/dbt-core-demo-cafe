@@ -71,6 +71,12 @@ makers sync
 
 # フルビルド（dbt deps + dbt seed + dbt run + dbt test）
 makers build
+
+# dbt v2の品質チェック一式
+makers quality
+
+# 列レベルリネージを生成してdbt Docs v2を表示
+makers lineage
 ```
 
 ### dbtコマンドとmakersコマンドの対応表
@@ -84,7 +90,10 @@ makers build
 | `dbt docs generate` | `makers dbt docs generate` | ドキュメントの生成 |
 | `dbt docs serve` | `makers dbt docs serve` | ドキュメントの配信 |
 | - | `makers build` | フルビルド（deps + seed + run + test） |
+| - | `makers quality` | lint、プロジェクトcheck、静的解析、unit/data tests、モデル契約 |
+| - | `makers lineage` | フルビルド後に列レベルリネージを生成してDocs v2を表示 |
 | - | `makers streamlit` | Streamlitアプリの起動 |
+| - | `makers charts` | dbt chartsダッシュボードの配信 |
 | - | `makers duckdb` | DuckDB CLIの起動 |
 
 ### 各コマンド
@@ -98,7 +107,8 @@ makers help
     ```bash
     makers sync
     ```
-    Pythonの仮想環境が作成され、必要なパッケージ（`dbt-duckdb`など）がインストールされます。
+    Pythonの仮想環境が作成され、dbt v2と必要なPythonパッケージがインストールされます。
+    この教育用プロジェクトは列レベルリネージ生成のためフル版`dbt`を使います。Apache 2.0版の`dbt-oss`にはStrict静的解析エンジンが含まれません。
 
 2.  **dbtパッケージのインストール**:
     ```bash
@@ -130,14 +140,42 @@ makers help
     makers streamlit
     ```
 
-8.  **ドキュメントの生成と表示**:
+7-b. **dbt chartsで可視化**（Streamlitと同じデータマートをYAMLで宣言的に可視化）:
     ```bash
-    makers dbt docs generate
+    uv tool install dbt-charts   # 初回のみ。`dct` コマンドが入る
+    makers charts                # http://localhost:<自動採番> でダッシュボードを配信
+    dct render charts/cafe_sales.yml --format png   # 画像として書き出す場合
+    ```
+    ボード定義は `charts/cafe_sales.yml`、接続先は `dbt_charts.yml` の `sources:` に登録しています。
+
+8.  **列レベルリネージとdbt Docs v2**:
+    ```bash
+    makers lineage
+    ```
+    `makers lineage`はフルビルドの後、Strict静的解析とInformation Schemaを使って列レベルリネージを生成し、Docs v2を起動します。ブラウザで `http://localhost:8580` を開き、モデルを選ぶと列ごとの入出力関係を確認できます。
+    個別に実行する場合は、次の順で実行します。
+    ```bash
+    makers dbt compile --generate-info-schema --static-analysis strict
+    makers dbt docs generate --no-compile
     makers dbt docs serve
     ```
-    ブラウザで `http://localhost:8080` にアクセスすると、生成されたドキュメントを確認できます。
 
-9.  **DuckDBの操作**:
+9.  **dbt v2の品質チェック**:
+    ```bash
+    makers quality
+    ```
+    `dbt lint`はSQLの規約、`dbt check`はモデル説明や契約などのプロジェクト規約、`dbt build`は静的解析・ユニットテスト・データテスト・モデル契約を確認します。`dbt build`にはプロジェクトcheckが含まれるため、個別に試す場合は `makers dbt check` を実行します。
+
+    `dq_order_null_rates`モデルで注文データ各列のNULL件数とNULL率を確認できます。`makers dbt show --select dq_order_null_rates`で結果を表示できます。`satisfaction_level`と`usage_scenario`には許容NULL率を指定した再利用可能なデータテストも設定しています。
+
+    鮮度チェックはdbt v2にありますが、DuckDBアダプターでは現時点で未実装のため、この教材の一括タスクには含めていません。Snowflakeなど対応アダプターで使う場合は、取り込み時刻列を用意して `dbt freshness` を実行します。
+
+10.  **セマンティックモデルとメトリクス**:
+    MartのYAMLにエンティティ、ディメンション、メトリクスを定義しています。`fct_order_items` の総売上・販売点数・注文件数を `ordered_at` の日付粒度で集計でき、商品・店舗・顧客のディメンションとエンティティ経由でつながります。Docs v2のモデル詳細から定義を確認できます。
+
+    このリポジトリはDuckDBを使うローカル教材です。定義のコンパイルとDocsでの確認はできますが、MetricFlowによるメトリクスクエリ実行はDuckDBアダプターが対象外のため、この構成では実行できません。MetricFlowのクエリを試す場合は、対応するデータウェアハウスが必要です。
+
+11.  **DuckDBの操作**:
     ```bash
     makers duckdb
     ```
@@ -148,7 +186,7 @@ makers help
     .exit    -- 終了
     ```
 
-10. **クリーンアップ**:
+12. **クリーンアップ**:
     ```bash
     makers clean
     ```
@@ -169,6 +207,30 @@ dbt seed   # シードデータのロード
 dbt run    # モデルの実行
 dbt test   # テストの実行
 ```
+
+## おまけ: 可視化のもう一つの選択肢（dbt charts）
+
+このリポジトリには、同じデータマート（`fct_order_items` + `dim_*`）を
+**YAML 1枚で宣言的に可視化する** 例も入れてあります。
+
+- ボード定義: [`charts/cafe_sales.yml`](charts/cafe_sales.yml)
+- 接続先の登録: [`dbt_charts.yml`](dbt_charts.yml)（`sources:` に DuckDB を指定）
+
+Streamlit 版（`app.py`）が Python で集計と描画を書くのに対して、
+dbt charts は **集計は SQL（`queries:`）／見た目は YAML（`charts:` と `rows:`）** に分かれます。
+Python のロジックが要らないぶん、差分レビューが「SQLが変わったか / 見た目が変わったか」で読めます。
+
+```bash
+uv tool install dbt-charts   # 初回のみ。`dct` コマンドが入る
+makers charts                # ローカルでダッシュボードを配信
+dct validate                 # CI で回せるボードの構文チェック
+dct render charts/cafe_sales.yml --format png   # 画像/HTML として書き出し
+```
+
+なお `type: duckdb` はローカルのファイルを読む形式なので、
+このボードは手元での表示と静的書き出し向けです。
+dbt charts Cloud で共有する場合は BigQuery / PostgreSQL / Redshift / Snowflake に載せるか、
+テーブルを Parquet / CSV に書き出して `sources:` に登録し直す必要があります。
 
 ## 今後の拡張
 
